@@ -1,0 +1,5 @@
+pet,petsmart
+groceries,schnucks,meijer
+other,lyft
+shopping,target,jcpenney,dollar shave club,best buy,guitar center
+music,spotify

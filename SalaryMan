@@ -1,0 +1,65 @@
+#!/usr/bin/python
+import csv
+
+# Define categories
+lookup = dict()
+spending = dict()
+with open('lookup_config.txt', 'r') as config:
+   r = csv.reader(config, delimiter=',')
+   for row in r:
+       if not row:
+           continue
+       cat = row[0]
+       items = row[1:]
+       lookup[cat] = items
+
+def find_category(purchase):
+    for key, lst in lookup.items():
+        for item in lst:
+            if item in purchase:
+                return key
+    return None 
+
+# Initialize spending table
+for key in lookup.keys():
+    spending[key] = 0.0
+
+# Read purchases
+with open('CreditCard3.csv', 'rb') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for row in reader:
+        if row:
+            amt = row[1]
+            purchase = row[-1]
+            cat = find_category(purchase.lower())
+            if not cat:
+                if 'ONLINE PAYMENT' in purchase:
+                    continue # nah
+
+                print "Category not found for purchase: " + purchase
+                new_cat = raw_input("Enter the category for the purchase: ")
+                if new_cat == 'skip':
+                    continue
+
+                new_endpoint = raw_input("Enter the store/POS/etc: ")
+                try:
+                    lookup[new_cat].append(new_endpoint)
+                except KeyError:
+                    lookup[new_cat] = [new_endpoint]
+                finally:
+                    spending[new_cat] = float(amt) 
+            else:
+                spending[cat] += float(amt)
+print "Lookup table: " + str(lookup)
+
+print "Spending summary:"
+for k, v in spending.items():
+    print k + ": " + str(v)
+
+# Upate lookup config file
+with open('lookup_config.txt', 'w') as outfile:
+    for k,v in lookup.items():
+        outfile.write(k)
+        for i in v:
+            outfile.write(','+i)
+        outfile.write('\n')
